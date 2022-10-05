@@ -39,7 +39,7 @@ module Q = struct
       Ok (int_of_severity severity, log, app, date) in
     let decode (severity, log, app, date) =
       Ok { severity = severity_of_int severity; log; app; date; } in
-    let rep = Caqti_type.(tup4 int string string ptime) in
+    let rep = Caqti_type.tup4 Caqti_type.int Caqti_type.string Caqti_type.string Caqti_type.ptime in
     custom ~encode ~decode rep
 
   let insert_log =
