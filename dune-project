@@ -13,6 +13,7 @@
    dream
    cmdliner
    caqti
+   caqti-lwt
    caqti-driver-sqlite3)
  (tags
   (topics Loggin-Microservice)))
