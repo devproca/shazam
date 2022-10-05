@@ -1,19 +1,19 @@
-let render param = 
+let home = 
   <html>
   <body>
-    <h1>The URL parameter was <%s param %>!</h1>
+    <h1>Home Page</h1>
   </body>
   </html>
-  
+
 let run () =
   Dream.run
   @@ Dream.logger
   @@ Dream.router [
+    Dream.get "/"
+      (fun _ ->
+        Dream.html home);
 
-    Dream.get "/:word"
+    Dream.get "/**" 
       (fun request ->
-        Dream.param request "word"
-        |> render
-        |> Dream.html);
-
+        Dream.redirect request "/")
   ]
