@@ -1,3 +1,4 @@
+module Database = Db.Database
 let home = 
   <html>
   <head>
@@ -9,24 +10,50 @@ let home =
   </body>
   </html>
 
-(*
- let log_output log = 
-  <div>
-    <label>log.severity</label>
-    <label>log.time</label>
-    <label>log.log</label>
-  </div> 
+let save log = 
+  Database.insert_log ~log:log
+(* let handle_add request =
+  let%lwt body = Dream.body request in
+    let log = log_of_yojson @@ Yojson.Safe.from_string body in
+    match log with
+    | Ok l -> save l
+    | Error _ -> Dream.respond ~code:500 "" *)
 
-let map_logs = function
-  | [] -> <div></div>
-  | t -> List.map (fun log -> log_output log) t *)
+(* let get f param =
+  let%lwt logs = f param in
+  match logs with
+  | Ok lst -> `List lst |> Yojson.Safe.to_string |> Dream.json
+  | Error _ -> Dream.respond ~code:404 "" *)
+
+let get_all () =
+  (* get Database.find_all_logs () *)
+  let%lwt logs = Database.find_all_logs in
+  match logs with
+  | Ok lst -> `List lst |> Yojson.Safe.to_string |> Dream.json
+  | Error _ -> Dream.respond ~code:404 ""
+
+let get_by_app app = 
+  (* get Database.find_by_app app *)
+  let%lwt logs = Database.find_by_app ~app:app in
+  match logs with
+  | Ok lst -> `List lst |> Yojson.Safe.to_string |> Dream.json
+  | Error _ -> Dream.respond ~code:404 ""
 
 let run () =
   Dream.run
   @@ Dream.logger
   @@ Dream.router [
     Dream.get "/" (fun _ -> Dream.html home);
+    Dream.scope "/logs" [] [
+      Dream.get "/" (fun _ -> get_all ());
+      Dream.get "/app/:app" (fun request ->
+        Dream.param "app" request |> get_by_app);
+      Dream.get "/severity/:severity" ;
+      Dream.get "/date/:date" ;
+    ];
     Dream.get "/**" 
       (fun request ->
         Dream.redirect request "/");
+    (* Dream.post "/" handle_add *)
+      
   ]
