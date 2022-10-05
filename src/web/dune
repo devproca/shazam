@@ -1,0 +1,14 @@
+(library
+ (name web)
+ (public_name shazam.web)
+ (libraries lwt core dream yojson ppx_deriving_yojson.runtime)
+ (preprocess
+  (pps ppx_deriving_yojson lwt_ppx)))
+
+(data_only_dirs db)
+
+(rule
+ (targets web.ml)
+ (deps web.eml.ml)
+ (action
+  (run dream_eml %{deps} --workspace %{workspace_root})))
