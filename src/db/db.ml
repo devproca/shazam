@@ -21,11 +21,13 @@ module Severity = struct
   | Info
   | Warn
   | Error
+  | Other
 
   let to_string = function
     | Info -> "info"
     | Warn -> "warn"
     | Error -> "error"
+    | Other -> "other"
 
   let of_string f =
     let lower = String.lowercase_ascii f in
@@ -33,13 +35,13 @@ module Severity = struct
     | "info" -> Info
     | "warn" -> Warn
     | "error" -> Error
-    | _ -> raise (Invalid_argument "Invalid severity, must be 'warn', 'error' or 'info'")
+    | _ -> Other
 
   let of_int = function
     | 0 -> Info
     | 1 -> Warn
     | 2 -> Error
-    | _ -> raise (Invalid_argument "Invalid severity must be 0, 1, 2")
+    | _ -> Other
 
   let of_yojson (p : Yojson.Safe.t) =
     match p with

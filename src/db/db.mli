@@ -61,11 +61,20 @@ module Ptime :
     val float_to_ptime_exn : float -> t
     val of_yojson : Yojson.Safe.t -> (t, string) result
   end
+module Severity :
+  sig
+    type t = Info | Warn | Error | Other
+    val to_string : t -> string
+    val of_string : string -> t
+    val of_int : int -> t
+    val of_yojson : Yojson.Safe.t -> (t, string) result
+    val to_yojson : t -> Yojson.Safe.t
+  end
 module Log :
   sig
     type t = {
       id : string;
-      severity : int;
+      severity : Severity.t;
       log : string;
       app : string;
       date : Ptime.t;
@@ -77,5 +86,5 @@ val log_table : (string, Log.t) Hashtbl.t
 val insert_log : log:Log.t -> unit
 val find_all_logs : unit -> Log.t list
 val find_by_app : app:string -> Log.t list
-val find_by_severity : severity:int -> Log.t list
+val find_by_severity : severity:Severity.t -> Log.t list
 val find_logs_since : since:Ptime.t -> Log.t list
