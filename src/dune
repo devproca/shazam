@@ -1,6 +1,13 @@
 (executable
  (name shazam)
  (public_name shazam)
- (libraries lwt core dream yojson shazam.db ppx_deriving_yojson.runtime)
+ (libraries
+  lwt
+  core
+  dream
+  yojson
+  shazam.db
+  ppx_deriving_yojson.runtime
+  shazam.web)
  (preprocess
   (pps ppx_deriving_yojson lwt_ppx)))

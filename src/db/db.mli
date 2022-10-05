@@ -24,5 +24,5 @@ module Database :
     val find_logs_since :
       since:Ptime.t ->
       (Log.t list, [> Caqti_error.call_or_retrieve ]) result Lwt.t
-    val migrate : (module Caqti_lwt.CONNECTION) -> unit -> unit Lwt.t
+    val migrate : unit -> unit Lwt.t
   end
