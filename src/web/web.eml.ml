@@ -29,16 +29,17 @@ let get_all () =
   (* get Database.find_all_logs () *)
   let%lwt logs = Database.find_all_logs in
   match logs with
-  | Ok lst -> `List lst |> Yojson.Safe.to_string |> Dream.json
+  | Ok lst -> `List (List.map Db.Log.to_yojson lst) |> Yojson.Safe.to_string |> Dream.json
   | Error _ -> Dream.respond ~code:404 ""
 
 let get_by_app app = 
   (* get Database.find_by_app app *)
   let%lwt logs = Database.find_by_app ~app:app in
   match logs with
-  | Ok lst -> `List lst |> Yojson.Safe.to_string |> Dream.json
+  | Ok lst -> `List (List.map Db.Log.to_yojson lst) |> Yojson.Safe.to_string |> Dream.json
   | Error _ -> Dream.respond ~code:404 ""
 
+let placeholder = fun _ -> Dream.html "Hello World"
 let run () =
   Dream.run
   @@ Dream.logger
@@ -47,9 +48,9 @@ let run () =
     Dream.scope "/logs" [] [
       Dream.get "/" (fun _ -> get_all ());
       Dream.get "/app/:app" (fun request ->
-        Dream.param "app" request |> get_by_app);
-      Dream.get "/severity/:severity" ;
-      Dream.get "/date/:date" ;
+        get_by_app @@ Dream.param request "app");
+      Dream.get "/severity/:severity" placeholder;
+      Dream.get "/date/:date" placeholder;
     ];
     Dream.get "/**" 
       (fun request ->

@@ -1,12 +1,21 @@
 module Log :
   sig
-    type severity = Error | Info | Warn | Debug | Trace
-    type t = {
-      severity : severity;
-      log : string;
-      app : string;
-      date : Ptime.t;
-    }
+    type t = { severity : int; log : string; app : string; date : string; }
+    val to_yojson : t -> Yojson.Safe.t
+    val of_yojson : Yojson.Safe.t -> t Ppx_deriving_yojson_runtime.error_or
+  end
+module Q :
+  sig
+    val log : Log.t Caqti_type.t
+    val insert_log : (Log.t, unit, [ `Zero ]) Caqti_request.t
+    val find_all_logs :
+      (unit, Log.t, [ `Many | `One | `Zero ]) Caqti_request.t
+    val find_logs_by_app :
+      (string, Log.t, [ `Many | `One | `Zero ]) Caqti_request.t
+    val find_by_severity :
+      (int, Log.t, [ `Many | `One | `Zero ]) Caqti_request.t
+    val find_logs_since :
+      (Ptime.t, Log.t, [ `Many | `One | `Zero ]) Caqti_request.t
   end
 module Db : Caqti_lwt.CONNECTION
 module Database :
@@ -15,11 +24,11 @@ module Database :
       log:Log.t -> (unit, [> Caqti_error.call_or_retrieve ]) result Lwt.t
     val find_all_logs :
       (Log.t list, [> Caqti_error.call_or_retrieve ]) result Lwt.t
-    val find_logs_by_app :
+    val find_by_app :
       app:string ->
       (Log.t list, [> Caqti_error.call_or_retrieve ]) result Lwt.t
     val find_by_severity :
-      severity:Log.severity ->
+      severity:int ->
       (Log.t list, [> Caqti_error.call_or_retrieve ]) result Lwt.t
     val find_logs_since :
       since:Ptime.t ->
