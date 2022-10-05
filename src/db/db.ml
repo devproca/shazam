@@ -6,19 +6,56 @@ module Ptime = struct
 
   let float_to_ptime_exn p =
     match of_float_s p with
-    | None -> raise (Invalid_argument "")
+    | None -> raise (Invalid_argument "Invalid type of time")
     | Some s -> s
 
   let of_yojson (p : Yojson.Safe.t) =
     match p with
     | `Float f -> Ok (float_to_ptime_exn f)
+    | `Int f -> Ok (float_to_ptime_exn (float_of_int f))
     | _ -> Error ""
+end
+
+module Severity = struct
+  type t =
+  | Info
+  | Warn
+  | Error
+
+  let to_string = function
+    | Info -> "info"
+    | Warn -> "warn"
+    | Error -> "error"
+
+  let of_string f =
+    let lower = String.lowercase_ascii f in
+    match lower with
+    | "info" -> Info
+    | "warn" -> Warn
+    | "error" -> Error
+    | _ -> raise (Invalid_argument "Invalid severity, must be 'warn', 'error' or 'info'")
+
+  let of_int = function
+    | 0 -> Info
+    | 1 -> Warn
+    | 2 -> Error
+    | _ -> raise (Invalid_argument "Invalid severity must be 0, 1, 2")
+
+  let of_yojson (p : Yojson.Safe.t) =
+    match p with
+    | `Int a -> Ok (of_int a)
+    | `String a -> Ok (of_string a)
+    | `Float a -> Ok (of_int @@ int_of_float a)
+    | _ -> Error "Invalid type for severity"
+
+  let to_yojson (p : t) : Yojson.Safe.t = 
+    `String (to_string p)
 end
 
 module Log = struct
   type t = {
     id : string;
-    severity : int;
+    severity : Severity.t;
     log : string;
     app : string;
     date : Ptime.t;
