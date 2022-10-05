@@ -1,6 +1,4 @@
-module Db = Db.Database
+module Db = Db
 module Web = Web
-
-let _ = Lwt_main.run (Db.migrate ())
 
 let () = Web.run ()

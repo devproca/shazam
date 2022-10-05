@@ -23,3 +23,6 @@ let migrations = [
     down = make_migration ~mig:{sql|DROP TABLE log|sql};
   }
 ]
+
+let migrate_up (module Db : DB) =
+  Lwt_list.iter_s (fun mig -> mig.up (module Db)) migrations

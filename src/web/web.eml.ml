@@ -1,4 +1,4 @@
-module Database = Db.Database
+module Database = Db
 let home = 
   <html>
   <head>
@@ -26,18 +26,12 @@ let save log =
   | Error _ -> Dream.respond ~code:404 "" *)
 
 let get_all () =
-  (* get Database.find_all_logs () *)
-  let%lwt logs = Database.find_all_logs in
-  match logs with
-  | Ok lst -> `List (List.map Db.Log.to_yojson lst) |> Yojson.Safe.to_string |> Dream.json
-  | Error _ -> Dream.respond ~code:404 ""
+  let logs = Database.find_all_logs () in
+    `List (List.map Db.Log.to_yojson logs) |> Yojson.Safe.to_string |> Dream.json
 
 let get_by_app app = 
-  (* get Database.find_by_app app *)
-  let%lwt logs = Database.find_by_app ~app:app in
-  match logs with
-  | Ok lst -> `List (List.map Db.Log.to_yojson lst) |> Yojson.Safe.to_string |> Dream.json
-  | Error _ -> Dream.respond ~code:404 ""
+  let logs = Database.find_by_app ~app:app in
+    `List (List.map Db.Log.to_yojson logs) |> Yojson.Safe.to_string |> Dream.json
 
 let placeholder = fun _ -> Dream.html "Hello World"
 let run () =
@@ -55,6 +49,4 @@ let run () =
     Dream.get "/**" 
       (fun request ->
         Dream.redirect request "/");
-    (* Dream.post "/" handle_add *)
-      
   ]
