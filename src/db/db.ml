@@ -26,7 +26,7 @@ module Log = struct
     log : string;
     app : string;
     date : Ptime.t;
-  } [@@ yojson]
+  } [@@derving yojson]
 end
 
 module Q = struct
