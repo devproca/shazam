@@ -1,4 +1,5 @@
 module Database = Db
+module Log = Db.Log
 let home = 
   <html>
   <head>
@@ -12,6 +13,13 @@ let home =
 
 let save log = 
   Database.insert_log ~log:log
+
+let add_log req =
+  let%lwt body = Dream.body req in
+  let log = Log.of_yojson @@ Yojson.Safe.from_string body in
+  match log with
+  | Ok l -> Db.insert_log ~log:l; Dream.respond ~code:201 ""
+  | Error _ -> Dream.respond ~code:401 ""
 (* let handle_add request =
   let%lwt body = Dream.body request in
     let log = log_of_yojson @@ Yojson.Safe.from_string body in
@@ -45,6 +53,7 @@ let run () =
         get_by_app @@ Dream.param request "app");
       Dream.get "/severity/:severity" placeholder;
       Dream.get "/date/:date" placeholder;
+      Dream.post "/" add_log;
     ];
     Dream.get "/**" 
       (fun request ->
