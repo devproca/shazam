@@ -78,6 +78,6 @@ module Database = struct
     Db.collect_list Q.find_logs_since since
 
 
-  let migrate (module DB : Caqti_lwt.CONNECTION) () =
-    Lwt_list.iter_s (fun (mig : Migration.t) -> mig.up (module DB)) Migration.migrations
+  let migrate () =
+    Lwt_list.iter_s (fun (mig : Migration.t) -> mig.up (module Db : Caqti_lwt.CONNECTION)) Migration.migrations
 end
