@@ -12,6 +12,7 @@ depends: [
   "dream"
   "cmdliner"
   "caqti"
+  "caqti-lwt"
   "caqti-driver-sqlite3"
   "odoc" {with-doc}
 ]

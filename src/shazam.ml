@@ -1,3 +1,1 @@
-module Web = Web
-
-let () = Web.run ()
+module Db = Db
