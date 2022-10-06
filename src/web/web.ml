@@ -44,7 +44,7 @@ let run () =
   @@ Dream.router [
     Dream.get "/" (fun _ -> 
       Home.render ~logs:(group_by_app ~logs:(Database.find_all_logs ())) |> Template.render |> Dream.html);
-    Dream.scope "/logs" [] [
+    Dream.scope "/api/v1/logs" [] [
       Dream.get "/" (fun _ -> get_all ());
       Dream.get "/app/:app" (fun request ->
         get_by_app @@ Dream.param request "app");
