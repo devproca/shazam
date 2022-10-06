@@ -9,12 +9,12 @@ depends: [
   "ocaml"
   "dune" {>= "3.4"}
   "lwt"
+  "core"
   "ptime"
+  "ppx_deriving_yojson"
+  "cohttp-lwt"
+  "yojson"
   "dream"
-  "cmdliner"
-  "caqti"
-  "caqti-lwt"
-  "caqti-driver-sqlite3"
   "odoc" {with-doc}
 ]
 build: [

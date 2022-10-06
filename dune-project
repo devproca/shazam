@@ -10,12 +10,12 @@
    ocaml
    dune
    lwt
+   core
    ptime
-   dream
-   cmdliner
-   caqti
-   caqti-lwt
-   caqti-driver-sqlite3)
+   ppx_deriving_yojson
+   cohttp-lwt
+   yojson
+   dream)
  (tags
   (topics Loggin-Microservice)))
 
