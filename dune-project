@@ -13,7 +13,6 @@
    core
    ptime
    ppx_deriving_yojson
-   cohttp-lwt
    yojson
    dream)
  (tags
