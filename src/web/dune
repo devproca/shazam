@@ -8,7 +8,7 @@
 (data_only_dirs db)
 
 (rule
- (targets home.ml template.ml)
- (deps home.eml.ml template.eml.ml)
+ (targets home.ml template.ml app.ml)
+ (deps home.eml.ml template.eml.ml app.eml.ml)
  (action
   (run dream_eml %{deps} --workspace %{workspace_root})))

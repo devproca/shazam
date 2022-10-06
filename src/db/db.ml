@@ -93,3 +93,33 @@ let find_logs_since ~since =
   Hashtbl.to_seq_values log_table
   |> Seq.filter (fun (t : Log.t) -> Ptime.is_later t.date ~than:since)
   |> List.of_seq
+
+let add_log_json body =
+  let log = Log.of_yojson @@ Yojson.Safe.from_string body in
+  match log with
+  | Ok l -> insert_log ~log:l;
+  | Error _ -> raise (Invalid_argument "Invalid log")
+
+let find_all_json () =
+  let logs = find_all_logs () in
+    `List (List.map Log.to_yojson logs)
+
+let find_by_app_json ~app =
+  let logs = find_by_app ~app:app in
+    `List (List.map Log.to_yojson logs)
+
+let group f l =
+  let rec grouping acc = function
+    | [] -> acc
+    | hd::tl ->
+      let l1, l2 = List.partition (f hd) tl in
+      grouping ((hd :: l1) :: acc) l2
+  in grouping [] l
+
+let group_by_app ~logs : GroupedLogs.t list =
+  let groups = group (fun (a : Log.t) (b : Log.t) -> a.app = b.app) logs in
+  List.map (fun (a : Log.t list) : GroupedLogs.t -> { app = (List.hd a).app; logs = a }) groups
+
+let get_by_app_json app = 
+  let logs = find_by_app ~app:app in
+    `List (List.map Log.to_yojson logs) |> Yojson.Safe.to_string

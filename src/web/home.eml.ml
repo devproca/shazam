@@ -1,8 +1,9 @@
-let render ~logs () =
+let render () =
+  let logs = Db.group_by_app ~logs:(Db.find_all_logs ()) in
   <h1>Dev-Pro Logging</h1>
   <div>
   <% logs |> List.iter begin fun (grouped_logs : Db.GroupedLogs.t) -> %>
-    <h3><%s grouped_logs.app %></h3>
+    <h3><a href="/app/<%s grouped_logs.app %>"><%s grouped_logs.app %></a></h3>
     <% grouped_logs.logs |> List.iter begin fun (log : Db.Log.t) -> %>
 %       begin match log.severity with
 %       | Db.Severity.Info ->

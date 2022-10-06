@@ -1,36 +1,6 @@
 module Database = Db
 module Log = Db.Log
 
-let save log = 
-  Database.insert_log ~log:log
-
-let add_log req =
-  let%lwt body = Dream.body req in
-  let log = Log.of_yojson @@ Yojson.Safe.from_string body in
-  match log with
-  | Ok l -> Db.insert_log ~log:l; Dream.respond ~code:201 ""
-  | Error _ -> Dream.respond ~code:401 ""
-
-let get_all () =
-  let logs = Database.find_all_logs () in
-    `List (List.map Db.Log.to_yojson logs) |> Yojson.Safe.to_string |> Dream.json
-
-let group f l =
-  let rec grouping acc = function
-    | [] -> acc
-    | hd::tl ->
-      let l1, l2 = List.partition (f hd) tl in
-      grouping ((hd :: l1) :: acc) l2
-  in grouping [] l
-
-let group_by_app ~logs : Db.GroupedLogs.t list =
-  let groups = group (fun (a : Log.t) (b : Log.t) -> a.app = b.app) logs in
-  List.map (fun (a : Log.t list) : Db.GroupedLogs.t -> { app = (List.hd a).app; logs = a }) groups
-
-let get_by_app app = 
-  let logs = Database.find_by_app ~app:app in
-    `List (List.map Db.Log.to_yojson logs) |> Yojson.Safe.to_string |> Dream.json
-
 module type SimpleRender = sig val render : unit -> string end
 
 let render_simple (module R : SimpleRender) = 
@@ -38,21 +8,31 @@ let render_simple (module R : SimpleRender) =
 
 let placeholder = fun _ -> Dream.html "Hello World"
 
+let insert_log log =
+  let%lwt body = log in
+  let l = Log.of_yojson @@ Yojson.Safe.from_string body in
+  match l with
+  | Ok l -> Db.insert_log ~log:l; Dream.respond ~code:201 ""
+  | Error _ -> Dream.respond ~code:401 ""
+
 let run () =
   Dream.run
   @@ Dream.logger
   @@ Dream.router [
-    Dream.get "/" (fun _ -> 
-      Home.render ~logs:(group_by_app ~logs:(Database.find_all_logs ())) |> Template.render |> Dream.html);
     Dream.scope "/api/v1/logs" [] [
-      Dream.get "/" (fun _ -> get_all ());
+      Dream.get "/" (fun _ -> Db.find_all_json () |> Yojson.Safe.to_string |> Dream.json);
       Dream.get "/app/:app" (fun request ->
-        get_by_app @@ Dream.param request "app");
+        let app = Dream.param request "app" in
+          Database.find_by_app_json ~app:app |> Yojson.Safe.to_string |> Dream.json);
       Dream.get "/severity/:severity" placeholder;
       Dream.get "/date/:date" placeholder;
-      Dream.post "/" add_log;
+      Dream.post "/" (fun request -> insert_log @@ Dream.body request)
     ];
-    Dream.get "/**" 
-      (fun request ->
-        Dream.redirect request "/");
+    Dream.scope "/" [] [
+      Dream.get "/" (fun _ -> render_simple (module Home));
+      Dream.get "/app/:app" (fun request ->
+          App.render ~app:(Dream.param request "app") |> Template.render |> Dream.html
+        );
+    ];
+    Dream.get "/**"  (fun request -> Dream.redirect request "/")
   ]
