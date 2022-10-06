@@ -9,6 +9,7 @@ depends: [
   "ocaml"
   "dune" {>= "3.4"}
   "lwt"
+  "ptime"
   "dream"
   "cmdliner"
   "caqti"

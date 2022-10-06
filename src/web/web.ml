@@ -8,6 +8,26 @@ let render_simple (module R : SimpleRender) =
 
 let placeholder = fun _ -> Dream.html "Hello World"
 
+let ws = 
+  fun () -> Dream.websocket (fun sock ->
+    let rec loop () =
+      match%lwt Dream.receive sock with
+      | None -> Dream.close_websocket sock
+      | Some s -> 
+        match String.split_on_char ',' s with
+        | _ :: [] | [] | _ :: _ :: _ :: _ -> Dream.close_websocket sock
+        | (h :: (t :: [])) -> 
+          if h = "all" then
+            match float_of_string_opt t with
+            | Some f -> 
+              let%lwt () = Dream.send sock (Db.find_since_json ~since:f |> Yojson.Safe.to_string) in loop ()
+            | None -> Dream.close_websocket sock
+          else
+            match float_of_string_opt t with
+            | Some f -> let%lwt () = Dream.send sock (Db.find_by_app_since_json ~app:h ~since:f |> Yojson.Safe.to_string) in loop ()
+            | None -> Dream.close_websocket sock
+    in loop ()) 
+
 let insert_log log =
   let%lwt body = log in
   let l = Log.of_yojson @@ Yojson.Safe.from_string body in
@@ -19,6 +39,7 @@ let run () =
   Dream.run
   @@ Dream.logger
   @@ Dream.router [
+    Dream.get "/static/**" @@ Dream.static "static";
     Dream.scope "/api/v1/logs" [] [
       Dream.get "/" (fun _ -> Db.find_all_json () |> Yojson.Safe.to_string |> Dream.json);
       Dream.get "/app/:app" (fun request ->
@@ -33,6 +54,9 @@ let run () =
       Dream.get "/app/:app" (fun request ->
           App.render ~app:(Dream.param request "app") |> Template.render |> Dream.html
         );
+    ];
+    Dream.scope "/ws" [] [
+        Dream.get "/" (fun _ -> ws ())
     ];
     Dream.get "/**"  (fun request -> Dream.redirect request "/")
   ]

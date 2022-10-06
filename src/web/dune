@@ -5,10 +5,8 @@
  (preprocess
   (pps ppx_deriving_yojson lwt_ppx)))
 
-(data_only_dirs db)
-
 (rule
- (targets home.ml template.ml app.ml)
- (deps home.eml.ml template.eml.ml app.eml.ml)
+ (targets home.ml template.ml app.ml log.ml)
+ (deps home.eml.ml template.eml.ml app.eml.ml log.eml.ml)
  (action
   (run dream_eml %{deps} --workspace %{workspace_root})))

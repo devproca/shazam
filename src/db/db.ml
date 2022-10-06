@@ -31,6 +31,7 @@ module Severity = struct
 
   let of_string f =
     let lower = String.lowercase_ascii f in
+    let () = print_endline lower in
     match lower with
     | "info" -> Info
     | "warn" -> Warn
@@ -89,10 +90,14 @@ let find_by_severity ~severity =
   |> Seq.filter (fun (t : Log.t) -> t.severity = severity)
   |> List.of_seq
 
-let find_logs_since ~since =
+let find_since ~since =
   Hashtbl.to_seq_values log_table
   |> Seq.filter (fun (t : Log.t) -> Ptime.is_later t.date ~than:since)
   |> List.of_seq
+
+let find_by_app_since ~since ~app =
+  find_since ~since:since
+  |> List.filter (fun (t : Log.t) -> t.app = app)
 
 let add_log_json body =
   let log = Log.of_yojson @@ Yojson.Safe.from_string body in
@@ -108,6 +113,16 @@ let find_by_app_json ~app =
   let logs = find_by_app ~app:app in
     `List (List.map Log.to_yojson logs)
 
+let find_since_json ~since =
+  let time =
+    match Ptime.of_float_s since with
+    | Some t -> t
+    | None -> 
+      match Ptime.of_float_s (Unix.time ()) with
+      | Some t -> t
+      | _ -> failwith "impossible"
+    in `List (find_since ~since:time |> List.map Log.to_yojson)
+
 let group f l =
   let rec grouping acc = function
     | [] -> acc
@@ -120,6 +135,12 @@ let group_by_app ~logs : GroupedLogs.t list =
   let groups = group (fun (a : Log.t) (b : Log.t) -> a.app = b.app) logs in
   List.map (fun (a : Log.t list) : GroupedLogs.t -> { app = (List.hd a).app; logs = a }) groups
 
-let get_by_app_json app = 
-  let logs = find_by_app ~app:app in
-    `List (List.map Log.to_yojson logs) |> Yojson.Safe.to_string
+let find_by_app_since_json ~app ~since =
+  let time =
+    match Ptime.of_float_s since with
+    | Some t -> t
+    | None -> 
+      match Ptime.of_float_s (Unix.time ()) with
+      | Some t -> t
+      | _ -> failwith "impossible"
+    in `List (find_by_app_since ~app:app ~since:time |> List.map Log.to_yojson)

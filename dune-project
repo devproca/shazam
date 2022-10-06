@@ -10,6 +10,7 @@
    ocaml
    dune
    lwt
+   ptime
    dream
    cmdliner
    caqti
