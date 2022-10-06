@@ -1,5 +1,5 @@
 let render () =
-  let logs = Db.group_by_app ~logs:(Db.find_all_logs ()) in
+  let logs = Db.group_by_app ~logs:(Db.find_all_logs ()) |> List.rev in
   <h1>Dev-Pro Logging</h1>
   <p class="mb-3 mt-3">Click an app for real time logging.</p>
   <% logs |> List.iter begin fun (grouped_logs : Db.GroupedLogs.t) -> %>
