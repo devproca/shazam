@@ -19,9 +19,9 @@ let get_by_app app =
   let logs = Database.find_by_app ~app:app in
     `List (List.map Db.Log.to_yojson logs) |> Yojson.Safe.to_string |> Dream.json
 
-module type Render = sig val render : unit -> string end
+module type SimpleRender = sig val render : unit -> string end
 
-let render (module R : Render) = 
+let render_simple (module R : SimpleRender) = 
   R.render |> Template.render |> Dream.html
 
 let placeholder = fun _ -> Dream.html "Hello World"
@@ -30,7 +30,8 @@ let run () =
   Dream.run
   @@ Dream.logger
   @@ Dream.router [
-    Dream.get "/" (fun _ -> render (module Home));
+    Dream.get "/" (fun _ -> 
+      (fun () -> Home.render ~logs:(Database.find_all_logs ()) ()) |> Template.render |> Dream.html);
     Dream.scope "/logs" [] [
       Dream.get "/" (fun _ -> get_all ());
       Dream.get "/app/:app" (fun request ->
