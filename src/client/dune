@@ -1,5 +1,0 @@
-(library
- (name client)
- (public_name shazam.client)
- (libraries ptime lwt yojson cohttp-lwt core cohttp ppx_deriving_yojson.runtime)
- (preprocess (pps ppx_deriving_yojson lwt_ppx)))
