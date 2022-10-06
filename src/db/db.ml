@@ -64,6 +64,13 @@ module Log = struct
   } [@@deriving yojson]
 end
 
+module GroupedLogs = struct
+  type t = {
+    app : string;
+    logs : Log.t list;
+  }
+end
+
 let log_table : (string, Log.t) Hashtbl.t  = Hashtbl.create 512
 
 let insert_log ~(log : Log.t) =

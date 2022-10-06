@@ -15,6 +15,18 @@ let get_all () =
   let logs = Database.find_all_logs () in
     `List (List.map Db.Log.to_yojson logs) |> Yojson.Safe.to_string |> Dream.json
 
+let group f l =
+  let rec grouping acc = function
+    | [] -> acc
+    | hd::tl ->
+      let l1, l2 = List.partition (f hd) tl in
+      grouping ((hd :: l1) :: acc) l2
+  in grouping [] l
+
+let group_by_app ~logs : Db.GroupedLogs.t list =
+  let groups = group (fun (a : Log.t) (b : Log.t) -> a.app = b.app) logs in
+  List.map (fun (a : Log.t list) : Db.GroupedLogs.t -> { app = (List.hd a).app; logs = a }) groups
+
 let get_by_app app = 
   let logs = Database.find_by_app ~app:app in
     `List (List.map Db.Log.to_yojson logs) |> Yojson.Safe.to_string |> Dream.json
@@ -31,7 +43,7 @@ let run () =
   @@ Dream.logger
   @@ Dream.router [
     Dream.get "/" (fun _ -> 
-      (fun () -> Home.render ~logs:(Database.find_all_logs ()) ()) |> Template.render |> Dream.html);
+      Home.render ~logs:(group_by_app ~logs:(Database.find_all_logs ())) |> Template.render |> Dream.html);
     Dream.scope "/logs" [] [
       Dream.get "/" (fun _ -> get_all ());
       Dream.get "/app/:app" (fun request ->
