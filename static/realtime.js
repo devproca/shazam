@@ -30,9 +30,13 @@ socket.onopen = (e) => {
   setInterval(() => socket.send(`${APP_NAME},${getLatestTime()}`), 1500)
   socket.onmessage = (e) => {
     const data = JSON.parse(e.data)
+    let run = false
     data.forEach(t => {
       LOGS.append(makeLog(t))
+      run = true
     })
+
+    if (run) generateChart()
   }
 }
 

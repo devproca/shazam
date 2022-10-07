@@ -46,7 +46,15 @@ let run () =
         let app = Dream.param request "app" in
           Database.find_by_app_json ~app:app |> Yojson.Safe.to_string |> Dream.json);
       Dream.get "/severity/:severity" placeholder;
-      Dream.get "/date/:date" placeholder;
+      Dream.get "/today/:app" (fun request -> 
+        let app = Dream.param request "app" in
+          Database.find_by_app_since_json ~app ~since:((Unix.time ()) -. (1. *. 24. *. 60. *. 60. *. 1000.))
+          |> Yojson.Safe.to_string
+          |> Dream.json);
+      Dream.get "/date/:since/:app" (fun request -> 
+        let app = Dream.param request "app" in
+        let since = float_of_string @@ Dream.param request "since" in
+          Database.find_by_app_since_json ~app ~since |> Yojson.Safe.to_string |> Dream.json);
       Dream.post "/" (fun request -> insert_log @@ Dream.body request)
     ];
     Dream.scope "/" [] [

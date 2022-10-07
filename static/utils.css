@@ -1,4 +1,7 @@
 .scroll {
-  max-height: 100px;
   overflow: scroll;
+}
+
+.home-log {
+  height: 100px;
 }
