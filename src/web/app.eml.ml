@@ -16,7 +16,7 @@ let render ~app () =
     <% end; %>
     </div>
     <div class="w-50">
-    <canvas id="logChart" width="280" height="400"></canvas>
+    <canvas id="logChart" width="280" height="h-100"></canvas>
     </div>
     </div>
     </div>

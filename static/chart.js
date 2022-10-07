@@ -34,9 +34,9 @@ const generateChart = () => {
     .then(d => d.json())
     .then(dataLogs => {
       const data = [dataLogs
-        .filter(t => t.severity !== 'warn').length,
+        .filter(t => t.severity !== 'error').length,
         dataLogs
-        .filter(t => t.severity !== 'error').length]
+        .filter(t => t.severity !== 'warn').length]
 
       chart.data.datasets[0].data = data
       chart.update()
