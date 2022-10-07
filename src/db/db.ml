@@ -90,7 +90,7 @@ end
 let log_table : (string, Log.t) Hashtbl.t  = Hashtbl.create 512
 
 let sort_by_date (lst : Log.t list) = 
-  lst |> List.fast_sort (fun (a : Log.t) (b : Log.t) -> (Ptime.to_float_s a.date) -. (Ptime.to_float_s b.date) |> (int_of_float))
+  lst |> List.fast_sort (fun (a : Log.t) (b : Log.t) -> (Ptime.to_float_s b.date) -. (Ptime.to_float_s a.date) |> (int_of_float))
 
 let insert_log ~(log : Log.t) =
   Hashtbl.add log_table log.id log
