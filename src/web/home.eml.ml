@@ -7,7 +7,7 @@ let render () =
     <div class="card-body" id="<%s grouped_logs.app %>">
     <h3 class="card-title"><a href="/app/<%s grouped_logs.app %>"><%s grouped_logs.app %></a></h3>
     <div class="scroll home-log">
-    <% grouped_logs.logs |> List.rev |> List.iter begin fun (log : Db.Log.t) -> %>
+    <% grouped_logs.logs |> List.iter begin fun (log : Db.Log.t) -> %>
       <%s! Log.render ~log:log () %>
     <% end; %>
     </div>

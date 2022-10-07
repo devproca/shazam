@@ -72,7 +72,25 @@ module GroupedLogs = struct
   }
 end
 
+open Lwt.Infix
+module Database = (val Caqti_lwt.connect (Uri.of_string "sqlite3:database.db") >>= Caqti_lwt.or_fail |> Lwt_main.run)
+
+module Q = struct
+  open Caqti_type.Std
+
+  let log =
+    let open Log in
+    let encode {id; severity; log; app; date} = Ok ((id, Severity.to_string severity, log, app), date) in
+    let decode ((id, severity, log, app), date) = Ok {id; severity = Severity.of_string severity; log; app; date} in
+    let t = Caqti_type.(tup2 (tup4 string string string string) ptime) in
+    custom ~encode ~decode t
+end
+
+
 let log_table : (string, Log.t) Hashtbl.t  = Hashtbl.create 512
+
+let sort_by_date (lst : Log.t list) = 
+  lst |> List.fast_sort (fun (a : Log.t) (b : Log.t) -> (Ptime.to_float_s b.date) -. (Ptime.to_float_s a.date) |> (int_of_float))
 
 let insert_log ~(log : Log.t) =
   Hashtbl.add log_table log.id log
@@ -84,20 +102,24 @@ let find_by_app ~app =
   Hashtbl.to_seq_values log_table
   |> Seq.filter (fun (t : Log.t) -> t.app = app)
   |> List.of_seq
+  |> sort_by_date
 
 let find_by_severity ~severity =
   Hashtbl.to_seq_values log_table
   |> Seq.filter (fun (t : Log.t) -> t.severity = severity)
   |> List.of_seq
+  |> sort_by_date
 
 let find_since ~since =
   Hashtbl.to_seq_values log_table
   |> Seq.filter (fun (t : Log.t) -> Ptime.is_later t.date ~than:since)
   |> List.of_seq
+  |> sort_by_date
 
 let find_by_app_since ~since ~app =
   find_since ~since:since
   |> List.filter (fun (t : Log.t) -> t.app = app)
+  |> sort_by_date
 
 let add_log_json body =
   let log = Log.of_yojson @@ Yojson.Safe.from_string body in
