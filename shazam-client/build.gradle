@@ -1,0 +1,74 @@
+plugins {
+    id 'org.springframework.boot' version '2.7.4'
+    id 'io.spring.dependency-management' version '1.0.14.RELEASE'
+    id 'java'
+}
+
+apply plugin: 'maven-publish'
+
+group 'ca.devpro.shazam'
+version '1.0.0'
+sourceCompatibility = '1.9'
+
+publishing {
+    publications {
+        devpro(MavenPublication) {
+            groupId = project.group
+            version = project.version
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name = 'devpro'
+            credentials {
+                username "$devproNexusUser"
+                password "$devproNexusPassword"
+            }
+            content {
+                includeGroup 'ca.devpro'
+            }
+            if (version.endsWith('-SNAPSHOT')) {
+                url = 'https://nexus.dev-pro.ca/repository/maven-snapshots'
+            } else {
+                url = 'https://nexus.dev-pro.ca/repository/maven-releases'
+            }
+        }
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation 'org.glassfish.jersey.core:jersey-client:2.27'
+    implementation 'org.glassfish.jersey.media:jersey-media-json-jackson:2.27'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.4.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.14.6'
+
+    implementation 'org.glassfish.jersey.inject:jersey-hk2:2.27'
+    implementation 'org.projectlombok:lombok:1.18.20'
+
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:2.6.7")
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
