@@ -10,33 +10,6 @@ group 'ca.devpro.shazam'
 version '1.0.0'
 sourceCompatibility = '1.9'
 
-publishing {
-    publications {
-        devpro(MavenPublication) {
-            groupId = project.group
-            version = project.version
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            name = 'devpro'
-            credentials {
-                username "$devproNexusUser"
-                password "$devproNexusPassword"
-            }
-            content {
-                includeGroup 'ca.devpro'
-            }
-            if (version.endsWith('-SNAPSHOT')) {
-                url = 'https://nexus.dev-pro.ca/repository/maven-snapshots'
-            } else {
-                url = 'https://nexus.dev-pro.ca/repository/maven-releases'
-            }
-        }
-    }
-}
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
